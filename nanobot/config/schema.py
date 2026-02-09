@@ -140,6 +140,13 @@ class QQConfig(BaseModel):
     secret: str = ""  # 机器人密钥 (AppSecret) from q.qq.com
     allow_from: list[str] = Field(default_factory=list)  # Allowed user openids (empty = public access)
 
+class MatrixConfig(BaseModel):
+    """Matrix (Element) channel configuration."""
+    enabled: bool = False
+    homeserver: str = "https://matrix.org"
+    access_token: str = ""
+    user_id: str = ""          # @bot:matrix.org
+    allow_from: list[str] = Field(default_factory=list)
 
 class ChannelsConfig(BaseModel):
     """Configuration for chat channels."""
@@ -152,6 +159,7 @@ class ChannelsConfig(BaseModel):
     email: EmailConfig = Field(default_factory=EmailConfig)
     slack: SlackConfig = Field(default_factory=SlackConfig)
     qq: QQConfig = Field(default_factory=QQConfig)
+    matrix: MatrixConfig = Field(default_factory=MatrixConfig)
 
 
 class AgentDefaults(BaseModel):
