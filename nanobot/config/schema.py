@@ -1,6 +1,7 @@
 """Configuration schema using Pydantic."""
 
 from pathlib import Path
+
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
@@ -147,6 +148,8 @@ class MatrixConfig(BaseModel):
     access_token: str = ""
     user_id: str = ""  # @bot:matrix.org
     device_id: str = ""
+    # Max seconds to wait for sync_forever to stop gracefully before cancellation fallback.
+    sync_stop_grace_seconds: int = 2
     allow_from: list[str] = Field(default_factory=list)
 
 class ChannelsConfig(BaseModel):
@@ -236,12 +239,12 @@ class Config(BaseSettings):
     providers: ProvidersConfig = Field(default_factory=ProvidersConfig)
     gateway: GatewayConfig = Field(default_factory=GatewayConfig)
     tools: ToolsConfig = Field(default_factory=ToolsConfig)
-    
+
     @property
     def workspace_path(self) -> Path:
         """Get expanded workspace path."""
         return Path(self.agents.defaults.workspace).expanduser()
-    
+
     def _match_provider(self, model: str | None = None) -> tuple["ProviderConfig | None", str | None]:
         """Match provider config and its registry name. Returns (config, spec_name)."""
         from nanobot.providers.registry import PROVIDERS
@@ -274,7 +277,7 @@ class Config(BaseSettings):
         """Get API key for the given model. Falls back to first available key."""
         p = self.get_provider(model)
         return p.api_key if p else None
-    
+
     def get_api_base(self, model: str | None = None) -> str | None:
         """Get API base URL for the given model. Applies default URLs for known gateways."""
         from nanobot.providers.registry import find_by_name
@@ -289,7 +292,7 @@ class Config(BaseSettings):
             if spec and spec.is_gateway and spec.default_api_base:
                 return spec.default_api_base
         return None
-    
+
     class Config:
         env_prefix = "NANOBOT_"
         env_nested_delimiter = "__"
